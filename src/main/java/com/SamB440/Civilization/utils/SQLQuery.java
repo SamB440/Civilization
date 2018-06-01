@@ -13,6 +13,7 @@ import org.bukkit.OfflinePlayer;
 
 import com.SamB440.Civilization.Civilization;
 import com.SamB440.Civilization.API.data.Settlement;
+import com.SamB440.Civilization.API.data.TechnologyType;
 
 public class SQLQuery {
 	
@@ -79,17 +80,16 @@ public class SQLQuery {
 		return null;
 	}
 	
-	public List<String> getTech(Settlement settlement)
+	public List<TechnologyType> getTech(Settlement settlement)
 	{
-		List<String> tech = new ArrayList<String>();
+		List<TechnologyType> tech = new ArrayList<TechnologyType>();
 		try {
 			PreparedStatement statement = plugin.getSQL().prepareStatement("SELECT tech FROM Tech WHERE settlement = ?");
 			statement.setString(1, settlement.getName());
+			
 			ResultSet rs = statement.executeQuery();
-			while(rs.next())
-			{
-				tech.add(rs.getString("tech"));
-			}
+			while(rs.next()) tech.add(TechnologyType.valueOf(rs.getString("tech")));
+			
 		} catch (SQLException e) {
 			e.printStackTrace();
 		} return tech;
@@ -128,21 +128,6 @@ public class SQLQuery {
 			while(rs.next())
 			{
 				if(rs.getString("name").equals(settlement.getName())) return true;
-			}
-		} catch (SQLException e) {
-			e.printStackTrace();
-		} return false;
-	}
-	
-	public boolean hasMultiplier(UUID uuid)
-	{
-		try {
-			PreparedStatement statement = plugin.getSQL().prepareStatement("SELECT multiplier FROM PlayerData WHERE uuid = ?");
-			statement.setString(1, uuid.toString().replaceAll("-", ""));
-			ResultSet rs = statement.executeQuery();
-			while(rs.next())
-			{
-				if(rs.getDouble("multiplier") != 1.0) return true;
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();

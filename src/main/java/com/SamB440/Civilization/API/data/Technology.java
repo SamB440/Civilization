@@ -21,9 +21,11 @@ public class Technology {
 	Player researcher;
 	int turns = 0;
 	int completion, time;
+	TechnologyType type;
+	
 	List<Integer> cancel = new ArrayList<Integer>();
 	
-	public Technology(Civilization plugin, Settlement settlement, Advancement advancement, Player researcher, int completion, int time)
+	public Technology(Civilization plugin, Settlement settlement, Advancement advancement, Player researcher, int completion, int time, TechnologyType type)
 	{
 		this.plugin = plugin;
 		this.settlement = settlement;
@@ -31,6 +33,7 @@ public class Technology {
 		this.researcher = researcher;
 		this.completion = completion;
 		this.time = time;
+		this.type = type;
 	}
 	
 	public void startResearch()
@@ -74,6 +77,8 @@ public class Technology {
 					researcher.sendMessage("completed");
 					TechTree tech = new TechTree(plugin);
 					tech.grantAdvancement(advancement, researcher);
+					
+					settlement.addTech(type);
 					cancel();
 				} else turns++;
 				researcher.sendMessage(turns + " turns");

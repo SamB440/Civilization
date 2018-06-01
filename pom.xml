@@ -4,7 +4,6 @@
   <artifactId>civilization</artifactId>
   <version>0.0.1-SNAPSHOT</version>
   <build>
-    <sourceDirectory>src/main/java</sourceDirectory>
     <plugins>
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
@@ -17,7 +16,7 @@
     </plugins>
     <resources>
       <resource>
-        <directory>resources</directory>
+        <directory>src/main/resources</directory>
         <includes>
           <include>plugin.yml</include>
           <include>LICENSE</include>

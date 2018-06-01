@@ -41,7 +41,15 @@ public class Civilization extends JavaPlugin {
 	@Override
 	public void onDisable()
 	{
-		
+		if(isSQL())
+		{
+			try {
+				SQL.close();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
 	}
 	
 	private void createConfig()
@@ -61,7 +69,7 @@ public class Civilization extends JavaPlugin {
 		File langfile = new File(getDataFolder() + "/lang/messages.yml");
 		if(!langfile.exists())
 		{
-			saveResource("lang/messages.yml", true);
+			saveResource("messages.yml", true);
 			log.info(c + "Created language file.");
 		}
 		
@@ -117,7 +125,7 @@ public class Civilization extends JavaPlugin {
 	
 	private void startTasks()
 	{
-
+		
 	}
 
 	private void addFiles()

@@ -105,13 +105,13 @@ public class Settlement {
 			if(players.isOnline())
 			{
 				Player player = Bukkit.getPlayer(players.getUniqueId());
-				CivPlayer rp = new CivPlayer(plugin, player);
-				rp.setSettlement(null);
+				CivPlayer civ = new CivPlayer(plugin, player);
+				civ.setSettlement(null);
 				player.sendMessage(ChatColor.RED + "Your settlement has been disbanded!");
 				player.playSound(player.getLocation(), Sound.ENTITY_ENDERDRAGON_DEATH, 1, 1);
 			} else {
-				CivPlayer rp = new CivPlayer(plugin, players);
-				rp.setSettlement(null);
+				CivPlayer civ = new CivPlayer(plugin, players);
+				civ.setSettlement(null);
 			}
 		}
 		
@@ -219,13 +219,26 @@ public class Settlement {
 		return sq.getMembers(this);
 	}
 	
-	public List<String> getTech()
+	public List<TechnologyType> getTech()
 	{
 		SQLQuery sq = new SQLQuery(plugin);
 		return sq.getTech(this);
 	}
 	
-	public boolean hasTech(String tech)
+	public void addTech(TechnologyType tech)
+	{
+		try {
+			PreparedStatement statement = plugin.getSQL().prepareStatement("INSERT INTO Tech (settlement, tech) VALUES (?, ?)");
+			statement.setString(1, name);
+			statement.setString(2, tech.toString());
+			statement.executeUpdate();
+			
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public boolean hasTech(TechnologyType tech)
 	{
 		return getTech().contains(tech);
 	}
