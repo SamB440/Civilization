@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Types;
 import java.util.UUID;
 
 import org.bukkit.Location;
@@ -59,6 +60,7 @@ public class CivPlayer {
 				{
 					PreparedStatement statement2 = plugin.getSQL().prepareStatement("INSERT INTO PlayerData (uuid, settlement) VALUES (?, ?)");
 					statement2.setString(1, player.getUniqueId().toString().replace("-", ""));
+					statement2.setNull(2, Types.OTHER);
 					statement.executeUpdate();
 				}
 			} catch (SQLException e) {
@@ -74,6 +76,14 @@ public class CivPlayer {
 		configuration.addDefault("viewing", false);
 	}
 	
+	/**
+	 * @param plugin - The {@link Civilization} plugin.
+	 * @param player - The Offline Bukkit player.
+	 * <br></br>
+	 * Methods not available:
+	 * 	{@link #getOrigin()},
+	 * 	{@link #setViewing(boolean, Location)}
+	 */
 	public CivPlayer(Civilization plugin, OfflinePlayer player)
 	{
 		this.plugin = plugin;
