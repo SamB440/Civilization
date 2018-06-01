@@ -21,6 +21,7 @@
           <include>plugin.yml</include>
           <include>LICENSE</include>
           <include>config.yml</include>
+          <include>messages.yml</include>
         </includes>
       </resource>
     </resources>
