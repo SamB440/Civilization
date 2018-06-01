@@ -6,6 +6,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
@@ -84,6 +85,8 @@ public class Settlement {
 				yaml.addDefault("king", king.getUniqueId());
 				yaml.addDefault("level", 1);
 				yaml.addDefault("science", 100);
+				yaml.addDefault("tech", Arrays.asList(""));
+				yaml.addDefault("members", Arrays.asList(king.getUniqueId()));
 				yaml.save(file);
 				yaml.load(file);
 			} catch (IOException e) {
@@ -133,7 +136,12 @@ public class Settlement {
 		{
 			SQLQuery sq = new SQLQuery(plugin);
 			sq.setNull("settlement", "PlayerData", player.getUniqueId());
-		} else file.delete();
+		} else {
+			List<OfflinePlayer> members = getMembers();
+			members.remove(player);
+			yaml.set("members", members);
+			reloadConfiguration();
+		}
 	}
 	
 	public void exile(Player player)
@@ -186,55 +194,96 @@ public class Settlement {
 				e.printStackTrace();
 			}
 		} else return Bukkit.getOfflinePlayer(UUID.fromString(yaml.getString("king")));
+		
 		return null;
 	}
 	
 	public boolean isKing(Player player)
 	{
-		try {
-			PreparedStatement statement = plugin.getSQL().prepareStatement("SELECT king FROM Settlements WHERE name = ?");
-			statement.setString(1, name);
-			
-			ResultSet rs = statement.executeQuery();
-			if(rs.next())
-			{
-				StringBuilder builder = new StringBuilder(rs.getString("king"));
-			    try {
-			        builder.insert(20, "-");
-			        builder.insert(16, "-");
-			        builder.insert(12, "-");
-			        builder.insert(8, "-");
-			    } catch (StringIndexOutOfBoundsException e) {
-			        e.printStackTrace();
-			    } if(builder.toString().equals(player.getUniqueId().toString())) return true;
+		if(plugin.isSQL())
+		{
+			try {
+				PreparedStatement statement = plugin.getSQL().prepareStatement("SELECT king FROM Settlements WHERE name = ?");
+				statement.setString(1, name);
+				
+				ResultSet rs = statement.executeQuery();
+				if(rs.next())
+				{
+					StringBuilder builder = new StringBuilder(rs.getString("king"));
+				    try {
+				        builder.insert(20, "-");
+				        builder.insert(16, "-");
+				        builder.insert(12, "-");
+				        builder.insert(8, "-");
+				    } catch (StringIndexOutOfBoundsException e) {
+				        e.printStackTrace();
+				    } if(builder.toString().equals(player.getUniqueId().toString())) return true;
+				}
+			} catch (SQLException e) {
+				e.printStackTrace();
 			}
-		} catch (SQLException e) {
-			e.printStackTrace();
-		} return false;
+		} else return yaml.getString("king").equals(player.getUniqueId().toString());
+		
+		return false;
 	}
 	
+	
+	/**
+	 * @return players in settlement - includes king.
+	 */
 	public List<OfflinePlayer> getMembers()
 	{
-		SQLQuery sq = new SQLQuery(plugin);
-		return sq.getMembers(this);
+		if(plugin.isSQL())
+		{
+			SQLQuery sq = new SQLQuery(plugin);
+			return sq.getMembers(this);
+		} else {
+			List<OfflinePlayer> members = new ArrayList<OfflinePlayer>();
+			for(String player : yaml.getStringList("members"))
+			{
+				members.add(Bukkit.getOfflinePlayer(UUID.fromString(player)));
+			}
+			
+			return members;
+		}
 	}
 	
 	public List<TechnologyType> getTech()
 	{
-		SQLQuery sq = new SQLQuery(plugin);
-		return sq.getTech(this);
+		if(plugin.isSQL())
+		{
+			SQLQuery sq = new SQLQuery(plugin);
+			return sq.getTech(this);
+		} else {
+			List<TechnologyType> types = new ArrayList<TechnologyType>();
+			for(String type : yaml.getStringList("tech"))
+			{
+				types.add(TechnologyType.valueOf(type));
+			}
+			
+			return types;
+		}
 	}
 	
 	public void addTech(TechnologyType tech)
 	{
-		try {
-			PreparedStatement statement = plugin.getSQL().prepareStatement("INSERT INTO Tech (settlement, tech) VALUES (?, ?)");
-			statement.setString(1, name);
-			statement.setString(2, tech.toString());
-			statement.executeUpdate();
+		if(plugin.isSQL())
+		{
+			try {
+				PreparedStatement statement = plugin.getSQL().prepareStatement("INSERT INTO Tech (settlement, tech) VALUES (?, ?)");
+				statement.setString(1, name);
+				statement.setString(2, tech.toString());
+				statement.executeUpdate();
+				
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		} else {
+			List<TechnologyType> types = getTech();
+			types.add(tech);
 			
-		} catch (SQLException e) {
-			e.printStackTrace();
+			yaml.set("tech", types);
+			reloadConfiguration();
 		}
 	}
 	
@@ -245,15 +294,20 @@ public class Settlement {
 	
 	public int getLevel()
 	{
-		try {
-			PreparedStatement statement = plugin.getSQL().prepareStatement("SELECT level FROM Settlements WHERE name = ?");
-			statement.setString(1, name);
-			
-			ResultSet rs = statement.executeQuery();
-			if(rs.next()) return rs.getInt("level");
-		} catch (SQLException e) {
-			e.printStackTrace();
-		} return 0;
+		if(plugin.isSQL())
+		{
+			try {
+				PreparedStatement statement = plugin.getSQL().prepareStatement("SELECT level FROM Settlements WHERE name = ?");
+				statement.setString(1, name);
+				
+				ResultSet rs = statement.executeQuery();
+				if(rs.next()) return rs.getInt("level");
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		} else return yaml.getInt("level");
+		
+		return 0;
 	}
 	
 	public List<SettlementClaim> getClaims(World world)
@@ -271,10 +325,26 @@ public class Settlement {
 	
 	public void setLevel(int level)
 	{
+		if(plugin.isSQL())
+		{
+			try {
+				PreparedStatement statement = plugin.getSQL().prepareStatement("UPDATE Settlements SET level = ?");
+				statement.setInt(1, level);
+				statement.executeUpdate();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		} else yaml.set("level", level);
+	}
+	
+	private void reloadConfiguration()
+	{
 		try {
-			PreparedStatement statement = plugin.getSQL().prepareStatement("UPDATE Settlements SET level = ?");
-			statement.setInt(1, level);
-		} catch (SQLException e) {
+			yaml.save(file);
+			yaml.load(file);
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (InvalidConfigurationException e) {
 			e.printStackTrace();
 		}
 	}
