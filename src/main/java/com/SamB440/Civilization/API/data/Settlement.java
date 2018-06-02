@@ -2,6 +2,7 @@ package com.SamB440.Civilization.API.data;
 
 import java.io.File;
 import java.io.IOException;
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -33,6 +34,7 @@ public class Settlement {
 	Player king;
 	File file;
 	FileConfiguration yaml;
+	Connection sql;
 	
 	public Settlement(Civilization plugin, String name, Player king)
 	{
@@ -41,6 +43,7 @@ public class Settlement {
 		this.king = king;
 		this.file = new File(plugin.getDataFolder() + "/settlements/" + name + ".settlement");
 		this.yaml = YamlConfiguration.loadConfiguration(file);
+		this.sql = sql;
 	}
 	
 	public Settlement(Civilization plugin, String name)
@@ -70,7 +73,7 @@ public class Settlement {
 		if(plugin.isSQL())
 		{
 			try {
-				PreparedStatement statement = plugin.getSQL().prepareStatement("INSERT INTO Settlements (king, name, level) VALUES (?, ?, ?)");
+				PreparedStatement statement = sql.prepareStatement("INSERT INTO Settlements (king, name, level) VALUES (?, ?, ?)");
 				statement.setString(1, king.getUniqueId().toString().replace("-", ""));
 				statement.setString(2, name);
 				statement.setInt(3, 1);
@@ -121,7 +124,7 @@ public class Settlement {
 		if(plugin.isSQL())
 		{
 			try {
-				PreparedStatement statement = plugin.getSQL().prepareStatement("DELETE FROM Settlements WHERE king = ?");
+				PreparedStatement statement = sql.prepareStatement("DELETE FROM Settlements WHERE king = ?");
 				statement.setString(1, king.getUniqueId().toString().replace("-", ""));
 				statement.executeUpdate();
 			} catch (SQLException e) {
@@ -158,7 +161,7 @@ public class Settlement {
 		if(plugin.isSQL())
 		{
 			try {
-				PreparedStatement statement = plugin.getSQL().prepareStatement("SELECT science FROM Settlements WHERE name = ?");
+				PreparedStatement statement = sql.prepareStatement("SELECT science FROM Settlements WHERE name = ?");
 				statement.setString(1, name);
 				
 				ResultSet rs = statement.executeQuery();
@@ -174,7 +177,7 @@ public class Settlement {
 		if(plugin.isSQL())
 		{
 			try {
-				PreparedStatement statement = plugin.getSQL().prepareStatement("SELECT king FROM Settlements WHERE name = ?");
+				PreparedStatement statement = sql.prepareStatement("SELECT king FROM Settlements WHERE name = ?");
 				statement.setString(1, name);
 				
 				ResultSet rs = statement.executeQuery();
@@ -203,7 +206,7 @@ public class Settlement {
 		if(plugin.isSQL())
 		{
 			try {
-				PreparedStatement statement = plugin.getSQL().prepareStatement("SELECT king FROM Settlements WHERE name = ?");
+				PreparedStatement statement = sql.prepareStatement("SELECT king FROM Settlements WHERE name = ?");
 				statement.setString(1, name);
 				
 				ResultSet rs = statement.executeQuery();
@@ -270,7 +273,7 @@ public class Settlement {
 		if(plugin.isSQL())
 		{
 			try {
-				PreparedStatement statement = plugin.getSQL().prepareStatement("INSERT INTO Tech (settlement, tech) VALUES (?, ?)");
+				PreparedStatement statement = sql.prepareStatement("INSERT INTO Tech (settlement, tech) VALUES (?, ?)");
 				statement.setString(1, name);
 				statement.setString(2, tech.toString());
 				statement.executeUpdate();
@@ -297,7 +300,7 @@ public class Settlement {
 		if(plugin.isSQL())
 		{
 			try {
-				PreparedStatement statement = plugin.getSQL().prepareStatement("SELECT level FROM Settlements WHERE name = ?");
+				PreparedStatement statement = sql.prepareStatement("SELECT level FROM Settlements WHERE name = ?");
 				statement.setString(1, name);
 				
 				ResultSet rs = statement.executeQuery();
@@ -328,7 +331,7 @@ public class Settlement {
 		if(plugin.isSQL())
 		{
 			try {
-				PreparedStatement statement = plugin.getSQL().prepareStatement("UPDATE Settlements SET level = ?");
+				PreparedStatement statement = sql.prepareStatement("UPDATE Settlements SET level = ?");
 				statement.setInt(1, level);
 				statement.executeUpdate();
 			} catch (SQLException e) {

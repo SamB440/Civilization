@@ -2,6 +2,7 @@ package com.SamB440.Civilization.API.data;
 
 import java.io.File;
 import java.io.IOException;
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -24,6 +25,7 @@ public class CivPlayer {
 	Player player;
 	OfflinePlayer oplayer;
 	FileConfiguration configuration;
+	Connection sql;
 	
 	/**
 	 * @param plugin - The {@link Civilization} plugin.
@@ -33,6 +35,7 @@ public class CivPlayer {
 	{
 		this.plugin = plugin;
 		this.player = player;
+		this.sql = plugin.getSql();
 		
 		File pf = new File(plugin.getDataFolder() + "/storage/" + player.getUniqueId() + ".yml");
 		
@@ -53,12 +56,12 @@ public class CivPlayer {
 			}
 		} else {
 			try {
-				PreparedStatement statement = plugin.getSQL().prepareStatement("SELECT uuid FROM PlayerData WHERE uuid = ?");
+				PreparedStatement statement = sql.prepareStatement("SELECT uuid FROM PlayerData WHERE uuid = ?");
 				statement.setString(1, player.getUniqueId().toString().replace("-", ""));
 				ResultSet rs = statement.executeQuery();
 				if(!rs.next())
 				{
-					PreparedStatement statement2 = plugin.getSQL().prepareStatement("INSERT INTO PlayerData (uuid, settlement) VALUES (?, ?)");
+					PreparedStatement statement2 = sql.prepareStatement("INSERT INTO PlayerData (uuid, settlement) VALUES (?, ?)");
 					statement2.setString(1, player.getUniqueId().toString().replace("-", ""));
 					statement2.setNull(2, Types.OTHER);
 					statement.executeUpdate();
@@ -131,11 +134,6 @@ public class CivPlayer {
 		configuration.set("origin.y", origin.getY());
 		configuration.set("origin.z", origin.getZ());
 		reloadConfiguration();
-		
-		if(val)
-		{
-			//do stuff
-		}
 	}
 	
 	public Location getOrigin()
@@ -184,12 +182,12 @@ public class CivPlayer {
 			}
 		} else {
 			try {
-				PreparedStatement statement = plugin.getSQL().prepareStatement("SELECT uuid FROM PlayerData WHERE uuid = ?");
+				PreparedStatement statement = sql.prepareStatement("SELECT uuid FROM PlayerData WHERE uuid = ?");
 				statement.setString(1, player.getUniqueId().toString().replace("-", ""));
 				ResultSet rs = statement.executeQuery();
 				if(!rs.next())
 				{
-					PreparedStatement statement2 = plugin.getSQL().prepareStatement("INSERT INTO PlayerData (uuid, settlement) VALUES (?, ?)");
+					PreparedStatement statement2 = sql.prepareStatement("INSERT INTO PlayerData (uuid, settlement) VALUES (?, ?)");
 					statement2.setString(1, player.getUniqueId().toString().replace("-", ""));
 					statement.executeUpdate();
 				}

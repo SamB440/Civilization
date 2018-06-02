@@ -1,5 +1,6 @@
 package com.SamB440.Civilization.utils;
 
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -18,12 +19,14 @@ import com.SamB440.Civilization.API.data.TechnologyType;
 public class SQLQuery {
 	
 	Civilization plugin;
+	Connection sql;
 	
 	public SQLQuery(Civilization plugin)
 	{
 		this.plugin = plugin;
+		this.sql = plugin.getSql();
 		try {
-			if(plugin.getSQL().isClosed()) plugin.openConnection();
+			if(sql.isClosed()) plugin.openConnection();
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
 		} catch (SQLException e) {
@@ -34,7 +37,7 @@ public class SQLQuery {
 	public int getInteger(String column, String database, UUID uuid)
 	{
 		try {
-			PreparedStatement statement = plugin.getSQL().prepareStatement("SELECT " + column + " FROM " + database + " WHERE uuid = ?");
+			PreparedStatement statement = sql.prepareStatement("SELECT " + column + " FROM " + database + " WHERE uuid = ?");
 			statement.setString(1, uuid.toString().replaceAll("-", ""));
 			ResultSet rs = statement.executeQuery();
 			if(rs.next())
@@ -50,7 +53,7 @@ public class SQLQuery {
 	public String getString(String column, String database, UUID uuid)
 	{
 		try {
-			PreparedStatement statement = plugin.getSQL().prepareStatement("SELECT " + column + " FROM " + database + " WHERE uuid = ?");
+			PreparedStatement statement = sql.prepareStatement("SELECT " + column + " FROM " + database + " WHERE uuid = ?");
 			statement.setString(1, uuid.toString().replaceAll("-", ""));
 			ResultSet rs = statement.executeQuery();
 			if(rs.next())
@@ -66,7 +69,7 @@ public class SQLQuery {
 	public Integer getInteger(String column, String database, String rclass, UUID uuid)
 	{
 		try {
-			PreparedStatement statement = plugin.getSQL().prepareStatement("SELECT " + column + " FROM " + database + " WHERE uuid = ? AND class = ?");
+			PreparedStatement statement = sql.prepareStatement("SELECT " + column + " FROM " + database + " WHERE uuid = ? AND class = ?");
 			statement.setString(1, uuid.toString().replaceAll("-", ""));
 			statement.setString(2, rclass);
 			ResultSet rs = statement.executeQuery();
@@ -84,7 +87,7 @@ public class SQLQuery {
 	{
 		List<TechnologyType> tech = new ArrayList<TechnologyType>();
 		try {
-			PreparedStatement statement = plugin.getSQL().prepareStatement("SELECT tech FROM Tech WHERE settlement = ?");
+			PreparedStatement statement = sql.prepareStatement("SELECT tech FROM Tech WHERE settlement = ?");
 			statement.setString(1, settlement.getName());
 			
 			ResultSet rs = statement.executeQuery();
@@ -99,7 +102,7 @@ public class SQLQuery {
 	{
 		List<OfflinePlayer> op = new ArrayList<OfflinePlayer>();
 		try {
-			PreparedStatement statement = plugin.getSQL().prepareStatement("SELECT uuid FROM PlayerData WHERE settlement = ?");
+			PreparedStatement statement = sql.prepareStatement("SELECT uuid FROM PlayerData WHERE settlement = ?");
 			statement.setString(1, settlement.getName());
 			ResultSet rs = statement.executeQuery();
 			while(rs.next())
@@ -122,7 +125,7 @@ public class SQLQuery {
 	public boolean settlementExists(Settlement settlement)
 	{
 		try {
-			PreparedStatement statement = plugin.getSQL().prepareStatement("SELECT name FROM Settlements WHERE name = ?");
+			PreparedStatement statement = sql.prepareStatement("SELECT name FROM Settlements WHERE name = ?");
 			statement.setString(1, settlement.getName());
 			ResultSet rs = statement.executeQuery();
 			while(rs.next())
@@ -137,7 +140,7 @@ public class SQLQuery {
 	public double getDouble(String column, String database, UUID uuid)
 	{
 		try {
-			PreparedStatement statement = plugin.getSQL().prepareStatement("SELECT " + column + " FROM " + database + " WHERE uuid = ?");
+			PreparedStatement statement = sql.prepareStatement("SELECT " + column + " FROM " + database + " WHERE uuid = ?");
 			statement.setString(1, uuid.toString().replaceAll("-", ""));
 			
 			ResultSet rs = statement.executeQuery();
@@ -152,7 +155,7 @@ public class SQLQuery {
 	public void set(String column, String database, Object amount, UUID uuid)
 	{
 		try {
-			PreparedStatement statement = plugin.getSQL().prepareStatement("UPDATE " + database + " SET " + column + " = ? WHERE uuid = ?");
+			PreparedStatement statement = sql.prepareStatement("UPDATE " + database + " SET " + column + " = ? WHERE uuid = ?");
 			Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
 				try {
 					statement.setObject(1, amount);
@@ -170,7 +173,7 @@ public class SQLQuery {
 	public void set(String column, String database, String value, UUID uuid)
 	{
 		try {
-			PreparedStatement statement = plugin.getSQL().prepareStatement("UPDATE " + database + " SET " + column + " = ? WHERE uuid = ?");
+			PreparedStatement statement = sql.prepareStatement("UPDATE " + database + " SET " + column + " = ? WHERE uuid = ?");
 			Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
 				try {
 					statement.setString(1, value);
@@ -188,7 +191,7 @@ public class SQLQuery {
 	public void set(String column, String database, Integer value, String rclass, UUID uuid)
 	{
 		try {
-			PreparedStatement statement = plugin.getSQL().prepareStatement("UPDATE " + database + " SET " + column + " = ? WHERE uuid = ? AND class = ?");
+			PreparedStatement statement = sql.prepareStatement("UPDATE " + database + " SET " + column + " = ? WHERE uuid = ? AND class = ?");
 			Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
 				try {
 					statement.setInt(1, value);
@@ -207,7 +210,7 @@ public class SQLQuery {
 	public void setNull(String column, String database, UUID uuid)
 	{
 		try {
-			PreparedStatement statement = plugin.getSQL().prepareStatement("UPDATE " + database + " SET " + column + " = ? WHERE uuid = ?");
+			PreparedStatement statement = sql.prepareStatement("UPDATE " + database + " SET " + column + " = ? WHERE uuid = ?");
 			Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
 				try {
 					statement.setNull(1, Types.OTHER);
