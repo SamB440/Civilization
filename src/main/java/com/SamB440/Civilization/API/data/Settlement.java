@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.NamespacedKey;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.Sound;
@@ -24,8 +25,6 @@ import org.bukkit.entity.Player;
 import com.SamB440.Civilization.Civilization;
 import com.SamB440.Civilization.utils.SQLQuery;
 import com.SamB440.Civilization.utils.TechTree;
-
-import net.md_5.bungee.api.ChatColor;
 
 public class Settlement {
 	
@@ -43,7 +42,7 @@ public class Settlement {
 		this.king = king;
 		this.file = new File(plugin.getDataFolder() + "/settlements/" + name + ".settlement");
 		this.yaml = YamlConfiguration.loadConfiguration(file);
-		this.sql = sql;
+		this.sql = plugin.getSql();
 	}
 	
 	public Settlement(Civilization plugin, String name)
@@ -52,6 +51,7 @@ public class Settlement {
 		this.name = name;
 		this.file = new File(plugin.getDataFolder() + "/settlements/" + name + ".settlement");
 		this.yaml = YamlConfiguration.loadConfiguration(file);
+		this.sql = plugin.getSql();
 	}
 
 	public String getName()
@@ -85,11 +85,11 @@ public class Settlement {
 			try {
 				file.createNewFile();
 				yaml.options().copyDefaults(true);
-				yaml.addDefault("king", king.getUniqueId());
+				yaml.addDefault("king", king.getUniqueId().toString());
 				yaml.addDefault("level", 1);
 				yaml.addDefault("science", 100);
 				yaml.addDefault("tech", Arrays.asList(""));
-				yaml.addDefault("members", Arrays.asList(king.getUniqueId()));
+				yaml.addDefault("members", Arrays.asList(king.getUniqueId().toString()));
 				yaml.save(file);
 				yaml.load(file);
 			} catch (IOException e) {
@@ -99,8 +99,11 @@ public class Settlement {
 			}
 		}
 		
+		CivPlayer civ = new CivPlayer(plugin, king);
+		civ.setSettlement(this);
+		
 		TechTree tech = new TechTree(plugin);
-		tech.grantAdvancement(Bukkit.getAdvancement(new NamespacedKey(plugin, "tech/root")), king);
+		tech.grantTech(Bukkit.getAdvancement(new NamespacedKey(plugin, "tech/root")), king);
 		tech.showInfo("root", king);
 	}
 	
@@ -268,6 +271,12 @@ public class Settlement {
 		}
 	}
 	
+	/**
+	 * @deprecated this is outdated and does not show granted technology to online players.
+	 * @see {@link TechTree}
+	 * @param tech - technology type
+	 */
+	@Deprecated
 	public void addTech(TechnologyType tech)
 	{
 		if(plugin.isSQL())

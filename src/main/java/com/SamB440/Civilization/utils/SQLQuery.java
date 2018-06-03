@@ -16,6 +16,10 @@ import com.SamB440.Civilization.Civilization;
 import com.SamB440.Civilization.API.data.Settlement;
 import com.SamB440.Civilization.API.data.TechnologyType;
 
+/**
+ * Utils class to retrieve MySQL data from settlements and users.
+ * @author SamB440
+ */
 public class SQLQuery {
 	
 	Civilization plugin;
@@ -26,7 +30,7 @@ public class SQLQuery {
 		this.plugin = plugin;
 		this.sql = plugin.getSql();
 		try {
-			if(sql.isClosed()) plugin.openConnection();
+			if(sql.isClosed() || sql == null) plugin.openConnection();
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
 		} catch (SQLException e) {
@@ -81,6 +85,21 @@ public class SQLQuery {
 			e.printStackTrace();
 		}
 		return null;
+	}
+	
+	public boolean hasTech(Settlement settlement, TechnologyType type)
+	{
+		try {
+			PreparedStatement statement = sql.prepareStatement("SELECT tech FROM Tech WHERE settlement = ? AND tech = ?");
+			statement.setString(1, settlement.getName());
+			statement.setString(2, type.toString());
+			
+			ResultSet rs = statement.executeQuery();
+			if(rs.next()) return true;
+			
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} return false;
 	}
 	
 	public List<TechnologyType> getTech(Settlement settlement)

@@ -64,7 +64,7 @@ public class CivPlayer {
 					PreparedStatement statement2 = sql.prepareStatement("INSERT INTO PlayerData (uuid, settlement) VALUES (?, ?)");
 					statement2.setString(1, player.getUniqueId().toString().replace("-", ""));
 					statement2.setNull(2, Types.OTHER);
-					statement.executeUpdate();
+					statement2.executeUpdate();
 				}
 			} catch (SQLException e) {
 				e.printStackTrace();

@@ -91,31 +91,30 @@ public class SettlementCommand implements CommandExecutor {
 							{
 								if(EnumUtils.isValidEnum(TechnologyType.class, args[1].toUpperCase()))
 								{
-									Advancement advancement = Bukkit.getAdvancement(new NamespacedKey(plugin, "tech/" + args[1].toLowerCase()));
 									switch(args[1].toLowerCase())
 									{
 										case "writing":
-											AdvancementProgress pottery = player.getAdvancementProgress(advancement);
+											AdvancementProgress pottery = player.getAdvancementProgress(Bukkit.getAdvancement(new NamespacedKey(plugin, "tech/pottery")));
 											if(pottery.isDone())
 											{
-												Technology tech = new Technology(plugin, civ.getSettlement(), advancement, player, 3, 6000, TechnologyType.WRITING);
+												Technology tech = new Technology(plugin, civ.getSettlement(), player, 3, 200, TechnologyType.WRITING);
 												tech.startResearch();
 											} else player.sendMessage(ChatColor.RED + "You need to research Pottery first!");
 											
 											break;
 											
 										case "wheel":
-											AdvancementProgress mining = player.getAdvancementProgress(advancement);
+											AdvancementProgress mining = player.getAdvancementProgress(Bukkit.getAdvancement(new NamespacedKey(plugin, "tech/mining")));
 											if(mining.isDone())
 											{
-												Technology tech = new Technology(plugin, civ.getSettlement(), advancement, player, 3, 6000, TechnologyType.WHEEL);
+												Technology tech = new Technology(plugin, civ.getSettlement(), player, 3, 200, TechnologyType.WHEEL);
 												tech.startResearch();
 											} else player.sendMessage(ChatColor.RED + "You need to research Mining first!");
 											
 											break;
 											
 										default:
-											Technology tech = new Technology(plugin, civ.getSettlement(), advancement, player, 3, 6000, TechnologyType.valueOf(args[1].toUpperCase()));
+											Technology tech = new Technology(plugin, civ.getSettlement(), player, 3, 200, TechnologyType.valueOf(args[1].toUpperCase()));
 											tech.startResearch();
 											break;
 									}
@@ -163,6 +162,8 @@ public class SettlementCommand implements CommandExecutor {
 								if(settlement.exists())
 								{
 									player.sendMessage(ChatColor.GREEN + "You have joined the Settlement of " + settlement.getName() + "!");
+									TechTree tech = new TechTree(plugin);
+									tech.grantTech("root", player);
 									
 									for(OfflinePlayer op : settlement.getMembers())
 									{

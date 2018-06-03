@@ -67,12 +67,12 @@ public class Civilization extends JavaPlugin {
 	private void createConfig()
 	{
 		getConfig().options().copyDefaults(true);
-		getConfig().addDefault("Server.sql.Enabled", false);
-		getConfig().addDefault("Server.sql.host", "localhost");
-		getConfig().addDefault("Server.sql.port", 3306);
-		getConfig().addDefault("Server.sql.database", "RPGWorld");
-		getConfig().addDefault("Server.sql.username", "root");
-		getConfig().addDefault("Server.sql.password", "123");
+		getConfig().addDefault("Server.SQL.Enabled", false);
+		getConfig().addDefault("Server.SQL.host", "localhost");
+		getConfig().addDefault("Server.SQL.port", 3306);
+		getConfig().addDefault("Server.SQL.database", "Civilization");
+		getConfig().addDefault("Server.SQL.username", "root");
+		getConfig().addDefault("Server.SQL.password", "123");
 		saveConfig();
 	}
 	
@@ -81,7 +81,7 @@ public class Civilization extends JavaPlugin {
 		File langfile = new File(getDataFolder() + "/lang/messages.yml");
 		if(!langfile.exists())
 		{
-			saveResource("messages.yml", true);
+			saveResource("lang/messages.yml", true);
 			log.info(c + "Created language file.");
 		}
 		

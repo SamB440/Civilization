@@ -5,9 +5,13 @@ import java.util.List;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.NamespacedKey;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.advancement.Advancement;
 import org.bukkit.advancement.AdvancementProgress;
+import org.bukkit.boss.BarColor;
+import org.bukkit.boss.BarStyle;
+import org.bukkit.boss.BossBar;
 import org.bukkit.entity.Player;
 
 import com.SamB440.Civilization.Civilization;
@@ -17,7 +21,7 @@ public class Technology {
 	
 	Civilization plugin;
 	Settlement settlement;
-	Advancement advancement;
+	String name;
 	Player researcher;
 	int turns = 0;
 	int completion, time;
@@ -25,11 +29,11 @@ public class Technology {
 	
 	List<Integer> cancel = new ArrayList<Integer>();
 	
-	public Technology(Civilization plugin, Settlement settlement, Advancement advancement, Player researcher, int completion, int time, TechnologyType type)
+	public Technology(Civilization plugin, Settlement settlement, Player researcher, int completion, int time, TechnologyType type)
 	{
 		this.plugin = plugin;
 		this.settlement = settlement;
-		this.advancement = advancement;
+		this.name = type.getName();
 		this.researcher = researcher;
 		this.completion = completion;
 		this.time = time;
@@ -38,49 +42,66 @@ public class Technology {
 	
 	public void startResearch()
 	{
+		Advancement advancement = Bukkit.getAdvancement(new NamespacedKey(plugin, "tech/" + name));
 		AdvancementProgress progress = researcher.getAdvancementProgress(advancement);
+		
 		if(progress.isDone())
 		{
 			researcher.sendMessage(ChatColor.RED + "This technology has already been researched!");
 			return;
 		}
 		
-		if(progress.getAwardedCriteria().size() >= 1) 
-		{
-			if(turns <= turns + 2) turns = turns + 2;
-			researcher.sendMessage("true");
-		}
-		researcher.sendMessage("1");
+		BossBar bossbar = Bukkit.createBossBar(ChatColor.AQUA + "Currently Researching: " + name, BarColor.BLUE, BarStyle.SEGMENTED_20);
+		bossbar.setProgress(0);
+		
 		for(OfflinePlayer op : settlement.getMembers())
 		{
 			if(op.isOnline())
 			{
-				researcher.sendMessage("2");
 				Player player = Bukkit.getPlayer(op.getUniqueId());
-				TechTree tech = new TechTree(plugin);
-				tech.showInfo("research", player);
+				bossbar.addPlayer(player);
+				bossbar.setVisible(true);
 			}
 		}
 		
+		if(progress.getAwardedCriteria().size() >= 1) 
+		{
+			double calculate = (double) completion / 2.0;
+			researcher.sendMessage(calculate + "");
+			completion = (int) Math.rint(calculate);
+			researcher.sendMessage(completion + "");
+			researcher.sendMessage("true");
+		}
+		
+		TechTree tech = new TechTree(plugin);
+		tech.showInfo("research", settlement);
+		
 		final int original = progress.getAwardedCriteria().size();
 		final int completion = this.completion;
+		final double ui = (double) (100 / completion) / 100;
+		
+		researcher.sendMessage(ui + "");
+		researcher.sendMessage(time + "");
 		
 		cancel.add(Bukkit.getServer().getScheduler().scheduleSyncRepeatingTask(plugin, () -> {
-			
+			researcher.sendMessage("1");
 			if(original != researcher.getAdvancementProgress(advancement).getAwardedCriteria().size())
 			{
 				cancel();
 				redo();
 			} else {
+				turns++;
 				if(turns == completion)
 				{
 					researcher.sendMessage("completed");
-					TechTree tech = new TechTree(plugin);
-					tech.grantAdvancement(advancement, researcher);
-					
-					settlement.addTech(type);
+					tech.grantTech(settlement, type);
+					bossbar.removeAll();
+					bossbar.setVisible(false);
 					cancel();
-				} else turns++;
+				}
+				
+				bossbar.setProgress(bossbar.getProgress() + ui);
+				researcher.sendMessage(bossbar.getProgress() + "");
 				researcher.sendMessage(turns + " turns");
 			}
 		}, time, time));
